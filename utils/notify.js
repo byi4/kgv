@@ -18,6 +18,7 @@
 
 import crypto from 'node:crypto'
 import tls from 'node:tls'
+import net from 'node:net'
 import { printGreen, printRed, printYellow } from './colorOut.js'
 
 /* ------------------------------------------------------------------ */
@@ -246,7 +247,7 @@ function sendMailSMTP(title, content, cfg) {
             reject(new Error(`STARTTLS 失败: ${line}`))
             return
           }
-          tlsSocket = require('node:tls').connect({ socket, host, rejectUnauthorized: true })
+          tlsSocket = tls.connect({ socket, host, rejectUnauthorized: true })
           tlsSocket.setEncoding('utf8')
           tlsSocket.on('data', (chunk) => { handleChunk(chunk) })
           tlsSocket.on('end', () => { clearTimeout(timer); resolve(true) })
@@ -292,10 +293,10 @@ function sendMailSMTP(title, content, cfg) {
 
     if (useSTARTTLS) {
       // STARTTLS：先明文连接
-      socket = require('node:net').connect(smtpPort, host, () => {})
+      socket = net.connect(smtpPort, host, () => {})
     } else {
       // 隐式 TLS：直接 TLS 连接
-      socket = require('node:tls').connect(
+      socket = tls.connect(
         { host, port: smtpPort, rejectUnauthorized: true },
         () => {}
       )

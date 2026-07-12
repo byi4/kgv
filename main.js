@@ -43,7 +43,7 @@ async function main() {
       // 单账号异常隔离：任何一个账号的请求/解析出错，只记录该账号失败，
       // 不影响其余账号继续执行，也保证后续通知与 secret 刷新一定能触发。
       try {
-        const headers = { 'cookie': 'token=' + user.token + '; userid=' + user.userid }
+        let headers = { 'cookie': 'token=' + user.token + '; userid=' + user.userid }
         const userDetail = await send(`/user/detail?timestrap=${Date.now()}`, "GET", headers)
         if (userDetail?.data?.nickname == null) {
           const safeUserId = maskIdentifier(user.userid)
@@ -74,6 +74,8 @@ async function main() {
               needRefresh = true
               printYellow(`账号 ${safeNickname} 需要刷新token`)
               user.token = refreshToken.data.token
+              // 用新 token 重建本次请求的 headers，使后续听歌/VIP 领取使用刷新后的凭证
+              headers = { 'cookie': 'token=' + user.token + '; userid=' + user.userid }
             }
           }
         }
